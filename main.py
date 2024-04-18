@@ -1,39 +1,42 @@
 import sys
 from tkinter import *
-from tkinter import filedialog
+from file_handler import FileHandler
 
+WINDOWS_SIZE = 400
+
+def add_menu_commands(filemenu, file_handler):
+    filemenu.add_command(label="New", command=file_handler.new_file)
+    filemenu.add_command(label="Open", command=file_handler.open_file)
+    filemenu.add_command(label="Save As...", command=file_handler.saveas)
+    filemenu.add_separator()
+    filemenu.add_command(label="Quit", command=root.quit)
+
+def define_window(root):
+    root.minsize(width=WINDOWS_SIZE, height=WINDOWS_SIZE)
+    root.maxsize(width=WINDOWS_SIZE, height=WINDOWS_SIZE)
+
+def define_font(menubar):
+    fontmenu = Menu(menubar, tearoff=0)
+    fonts = ["Helvetica", "Courier", "Times"]
+    for font in fonts:
+        fontmenu.add_command(label=font, command=lambda f=font: text_handler.change_font(f))
+    menubar.add_cascade(label="Font", menu=fontmenu)
+
+filename = None
 root = Tk("Super Text Editor")
+define_window(root=root)
 
-text_grid = Text(root)
-text_grid.grid()
+text_grid = Text(root, width=WINDOWS_SIZE, height=WINDOWS_SIZE)
+text_grid.grid(sticky="nsew")
 
-def saveas():
-    global text_grid
-    text = text_grid.get("1.0", "end-1c")
-    save_location = filedialog.asksaveasfilename()
+text_handler = FileHandler(text_grid)
 
-    with open(save_location, 'w+') as saved_file:
-        saved_file.write(text)
+menubar = Menu(root)
+filemenu = Menu(menubar)
+add_menu_commands(filemenu=filemenu, file_handler=text_handler)
+menubar.add_cascade(label="File", menu=filemenu)
 
-button = Button(root, text="Save", command=saveas)
-button.grid()
-
-font_grid = Menubutton(root, text="Font")
-font_grid.grid()
-font_grid.menu = Menu(font_grid, tearoff=0)
-font_grid["menu"] = font_grid.menu
-
-helvetica = IntVar()
-courier = IntVar()
-
-font_by_name = {
-    "Courier": courier,
-    "Helvetica": helvetica
-}
-
-for font in font_by_name.keys():
-    font_grid.menu.add_checkbutton(label=font, variable=font_by_name[font], command={
-        text_grid.config(font=font)
-    })
+root.config(menu=menubar)
+define_font(menubar=menubar)
 
 root.mainloop()
